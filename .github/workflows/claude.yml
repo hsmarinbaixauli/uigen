@@ -35,7 +35,10 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: >-
+            --custom-instructions "The project dependencies are installed. The server is running at localhost:3000. Use the mcp__playwright tools to launch a browser and interact with the app."
+            --allowed-tools "Bash(npm:*),mcp__playwright__browser_snapshot,mcp__playwright__browser_click"
           custom_instructions: |
             The project dependencies are installed.
             The server is running at localhost:3000.
