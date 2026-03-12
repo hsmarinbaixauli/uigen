@@ -13,28 +13,40 @@ jobs:
       pull-requests: write
       contents: write
     steps:
-      - name: Project Setup
-        run: |
-          npm run setup
-          npm run dev:daemon
+      # 1. Primero, descargar el código
       - uses: actions/checkout@v4
+
+      # 2. Instalar Node.js para que npm funcione
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Usa la versión de Node que necesites
+
+      # 3. Instalar dependencias (el comando real, no el del curso)
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Iniciar el servidor en segundo plano
+      - name: Start dev server
+        run: npm run dev &
+
+      # 5. Ejecutar Claude
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           custom_instructions: |
-            The project is already set up with all dependencies installed.
-            The server is already running at localhost:3000. Logs from it
-            are being written to logs.txt. If needed, you can query the
-            db with the 'sqlite3' cli. If needed, use the mcp__playwright
-            set of tools to launch a browser and interact with the app.
+            The project dependencies are installed.
+            The server is running at localhost:3000.
+            Use the mcp__playwright tools to launch a browser and interact with the app.
           mcp_config: |
             {
               "mcpServers": {
                 "playwright": {
-                "command": "npx",
+                  "command": "npx",
                   "args": [
+                    "-y",
                     "@playwright/mcp@latest",
                     "--allowed-origins",
                     "localhost:3000;cdn.tailwindcss.com;esm.sh"
@@ -42,6 +54,4 @@ jobs:
                 }
               }
             }
-              
-          allowed_tools: "Bash(npm:*),Bash(sqlite3:*),mcp__playwright__browser_snapshot,mcp__playwright__browser_click,..."
-
+          allowed_tools: "Bash(npm:*),mcp__playwright__browser_snapshot,mcp__playwright__browser_click"
